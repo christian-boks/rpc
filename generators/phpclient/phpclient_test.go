@@ -1,4 +1,4 @@
-package tstypes_test
+package phpclient_test
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"github.com/tj/assert"
 	"github.com/tj/go-fixture"
 
-	"github.com/apex/rpc/generators/tstypes"
+	"github.com/apex/rpc/generators/phpclient"
 	"github.com/apex/rpc/schema"
 )
 
@@ -16,8 +16,8 @@ func TestGenerate(t *testing.T) {
 	assert.NoError(t, err, "loading schema")
 
 	var act bytes.Buffer
-	err = tstypes.Generate(&act, schema)
+	err = phpclient.Generate(&act, schema, "Client")
 	assert.NoError(t, err, "generating")
 
-	fixture.Assert(t, "todo_types.ts", act.Bytes())
+	fixture.Assert(t, "todo_client.php", act.Bytes())
 }

@@ -74,7 +74,9 @@ func Generate(w io.Writer, s *schema.Schema, validate bool) error {
 		out(w, "\n")
 	}
 
-	out(w, "\n%s\n", utils)
+	if validate {
+		out(w, "\n%s\n", utils)
+	}
 
 	return nil
 }
@@ -105,8 +107,6 @@ func goType(s *schema.Schema, f schema.Field) string {
 
 	// type
 	switch f.Type.Type {
-	case schema.Any:
-		return "interface{}"
 	case schema.String:
 		return "string"
 	case schema.Int:

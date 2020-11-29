@@ -16,7 +16,7 @@ func Generate(w io.Writer, s *schema.Schema) error {
 	// types
 	for _, t := range s.TypesSlice() {
 		out(w, "// %s %s\n", format.GoName(t.Name), t.Description)
-		out(w, "interface %s {\n", format.GoName(t.Name))
+		out(w, "export interface %s {\n", format.GoName(t.Name))
 		writeFields(w, s, t.Properties)
 		out(w, "}\n\n")
 	}
@@ -41,7 +41,7 @@ func Generate(w io.Writer, s *schema.Schema) error {
 		// outputs
 		if len(m.Outputs) > 0 {
 			out(w, "// %sOutput params.\n", name)
-			out(w, "class %sOutput {\n", name)
+			out(w, "interface %sOutput {\n", name)
 			writeFields(w, s, m.Outputs)
 			out(w, "}\n")
 		}
@@ -82,8 +82,6 @@ func jsType(s *schema.Schema, f schema.Field) string {
 
 	// type
 	switch f.Type.Type {
-	case schema.Any:
-		return "any"
 	case schema.String:
 		return "string"
 	case schema.Int, schema.Float:

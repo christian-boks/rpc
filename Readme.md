@@ -17,15 +17,25 @@ All inputs are objects, all outputs are objects, this improves future-proofing a
 
 ## Commands
 
-There are several commands provided for generating clients, servers, and documentation:
+There are several commands provided for generating clients, servers, and documentation. Each of these commands accept a `-schema` flag defaulting to `schema.json`, see the `-h` help output for additional usage details.
 
+### Clients
+
+- `rpc-dotnet-client` generates .NET clients
+- `rpc-ruby-client` generates Ruby clients
+- `rpc-php-client` generates PHP clients
+- `rpc-elm-client` generates Elm clients
 - `rpc-go-client` generates Go clients
-- `rpc-go-server` generates Go servers
-- `rpc-ts-client` generates TypeScript clients
 - `rpc-go-types` generates Go type definitions
-- `rpc-md-docs` generates markdown documentation
+- `rpc-ts-client` generates TypeScript clients
 
-All of these commands accept a `-schema` flag defaulting to `schema.json`, see the `-h` help output for additional usage details.
+### Servers
+
+- `rpc-go-server` generates Go servers
+
+### Documentation
+
+- `rpc-md-docs` generates markdown documentation
 
 ## Schemas
 
@@ -55,7 +65,7 @@ Currently the schemas are loosely a superset of [JSON Schema](https://json-schem
 
 <details>
   <summary>What does the client output look like?</summary>
-  See the <a href="https://github.com/apex/logs/blob/master/go/logs/client.go">Apex Logs</a> Go client for an example, client code is designed to be concise and idiomatic.
+  See the <a href="https://github.com/apex/logs/blob/master/client.go">Apex Logs</a> Go client for an example, client code is designed to be concise and idiomatic.
 </details>
 
 ---

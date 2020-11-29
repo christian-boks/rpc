@@ -1,3 +1,5 @@
+//go:generate file2go -in schema.json -pkg schema
+
 // Package schema provides the Apex RPC schema.
 package schema
 
@@ -9,8 +11,6 @@ import (
 
 	"github.com/xeipuuv/gojsonschema"
 )
-
-// TODO: remove Any type, don't think I'm using it anymore
 
 // ValidationError is a validation error.
 type ValidationError struct {
@@ -31,7 +31,6 @@ type Kind string
 
 // Types available.
 const (
-	Any       Kind = "any"
 	String    Kind = "string"
 	Bool      Kind = "boolean"
 	Int       Kind = "integer"
@@ -149,9 +148,17 @@ type Group struct {
 // TypesSlice returns a sorted slice of types.
 func (s Schema) TypesSlice() (v []Type) {
 	for _, t := range s.Types {
+		// sort fields
+		sort.Slice(t.Properties, func(i, j int) bool {
+			a := t.Properties[i]
+			b := t.Properties[j]
+			return a.Name < b.Name
+		})
+
 		v = append(v, t)
 	}
 
+	// sort types
 	sort.Slice(v, func(i, j int) bool {
 		return v[i].Name < v[j].Name
 	})
@@ -161,8 +168,8 @@ func (s Schema) TypesSlice() (v []Type) {
 
 // Load returns a schema loaded and validated from path.
 func Load(path string) (*Schema, error) {
-	// TODO: bake into binary :D
-	schema := gojsonschema.NewReferenceLoader("file:///H:\\code\\rpc\\schema\\schema.json")
+	// TODO: bake into the binary with Go's native 'embed' stuff once it's available
+	schema := gojsonschema.NewBytesLoader(SchemaJson)
 	doc := gojsonschema.NewReferenceLoader("file://" + path)
 
 	// validate
@@ -233,7 +240,7 @@ func Load(path string) (*Schema, error) {
 // IsBuiltin returns true if the type is built-in.
 func IsBuiltin(kind Kind) bool {
 	switch kind {
-	case Any, String, Int, Bool, Float, Array, Object, Timestamp:
+	case String, Int, Bool, Float, Array, Object, Timestamp:
 		return true
 	default:
 		return false

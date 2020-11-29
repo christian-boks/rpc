@@ -5,7 +5,7 @@
   "methods": [
     {
       "name": "add_item",
-      "description": "Add an item to the list.",
+      "description": "adds an item to the list.",
       "inputs": [
         {
           "name": "item",
@@ -17,7 +17,7 @@
     },
     {
       "name": "get_items",
-      "description": "Return all items in the list.",
+      "description": "returns all items in the list.",
       "outputs": [
         {
           "name": "items", 
@@ -38,12 +38,21 @@
           "description": "the id of the item to remove.",
           "type": "integer"
         }
+      ],
+      "outputs": [
+        {
+          "name": "item",
+          "description": "the item removed.",
+          "type": {
+            "$ref": "#/types/item"
+          }
+        }
       ]
     }
   ],
   "types": {
     "item": {
-      "description": "A to-do item.",
+      "description": "is a to-do item.",
       "properties": [
         {
           "name": "id",
