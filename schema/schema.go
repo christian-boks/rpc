@@ -162,7 +162,7 @@ func (s Schema) TypesSlice() (v []Type) {
 // Load returns a schema loaded and validated from path.
 func Load(path string) (*Schema, error) {
 	// TODO: bake into binary :D
-	schema := gojsonschema.NewReferenceLoader("file:///Users/tj/dev/src/github.com/apex/rpc/schema/schema.json")
+	schema := gojsonschema.NewReferenceLoader("file:///H:\\code\\rpc\\schema\\schema.json")
 	doc := gojsonschema.NewReferenceLoader("file://" + path)
 
 	// validate

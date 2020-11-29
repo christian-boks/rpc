@@ -41,6 +41,17 @@ func GoName(s string) string {
 	return s
 }
 
+// GoName returns a name formatted for Go.
+func RustName(s string) string {
+	s = strcase.ToSnake(s)
+	// for _, c := range cases {
+	// 	if strings.HasSuffix(s, c) {
+	// 		s = strings.Replace(s, c, strings.ToUpper(c), 1)
+	// 	}
+	// }
+	return s
+}
+
 // JsName returns a name formatted for JS.
 func JsName(s string) string {
 	return strcase.ToLowerCamel(s)
