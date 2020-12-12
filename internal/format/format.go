@@ -42,14 +42,6 @@ func GoName(s string) string {
 	return s
 }
 
-// GoName returns a name formatted for Go.
-func RustName(s string) string {
-	s = strcase.ToSnake(s)
-	// for _, c := range cases {
-	// 	if strings.HasSuffix(s, c) {
-	// 		s = strings.Replace(s, c, strings.ToUpper(c), 1)
-	// 	}
-
 // GoInputType returns the name of a method input type
 func GoInputType(types, method string) string {
 	if len(types) == 0 {
@@ -57,9 +49,15 @@ func GoInputType(types, method string) string {
 	}
 	return fmt.Sprintf("%s.%sInput", types, GoName(method))
 }
+
 // JsName returns a name formatted for JS.
 func JsName(s string) string {
 	return strcase.ToLowerCamel(s)
+}
+
+// RustName returns a name formatted for Rust.
+func RustName(s string) string {
+	return strcase.ToSnake(s)
 }
 
 // ID returns the id case for anchors.

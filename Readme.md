@@ -27,6 +27,8 @@ There are several commands provided for generating clients, servers, and documen
 - `rpc-elm-client` generates Elm clients
 - `rpc-go-client` generates Go clients
 - `rpc-go-types` generates Go type definitions
+- `rpc-rust-client` generates Rust clients
+- `rpc-rust-types` generates Rust type definitions
 - `rpc-ts-client` generates TypeScript clients
 
 ### Servers

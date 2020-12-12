@@ -14,6 +14,13 @@ func TestGoName(t *testing.T) {
 	assert.Equal(t, "IP", format.GoName("ip"))
 }
 
+// Test rust name formatting.
+func TestRustName(t *testing.T) {
+	assert.Equal(t, "update_user", format.RustName("UpdateUser"))
+	assert.Equal(t, "user_id", format.RustName("UserID"))
+	assert.Equal(t, "ip", format.RustName("ip"))
+}
+
 // Test js name formatting.
 func TestJsName(t *testing.T) {
 	assert.Equal(t, "updateUserSettings", format.JsName("update_user_settings"))
