@@ -23,7 +23,7 @@ impl From<serde_json::error::Error> for ClientError {
         ClientError {
             status: "Internal Server Error".into(),
             status_code: 500,
-            err_type: Some("json".into()),
+            err_type: Some("serde".into()),
             message: Some(err.to_string()),
         }
     }
@@ -41,7 +41,7 @@ impl From<reqwest::Error> for ClientError {
 }
 `
 
-var call = `// call implementation.
+var call = `    // call implementation.
     async fn call(
         &self,
         method: &str,
@@ -59,7 +59,10 @@ var call = `// call implementation.
         }
 
         if self.auth_token.is_some() {
-            builder = builder.header("Authorization", format!("Bearer {:?}", &self.auth_token));
+            builder = builder.header(
+                "Authorization",
+                format!("Bearer {}", &self.auth_token.as_ref().unwrap())
+            );
         }
 
         let resp = builder.send().await?;

@@ -3,7 +3,6 @@ package rusttypes
 import (
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 
 	"github.com/apex/rpc/internal/format"
@@ -11,18 +10,8 @@ import (
 	"github.com/apex/rpc/schema"
 )
 
-var utils = `// oneOf returns true if s is in the values.
-func oneOf(s string, values []string) bool {
-  for _, v := range values {
-		if s == v {
-			return true
-		}
-	}
-	return false
-}`
-
 // Generate writes the Rust type implementations to w, with optional validation methods.
-func Generate(w io.Writer, s *schema.Schema, validate bool) error {
+func Generate(w io.Writer, s *schema.Schema) error {
 	out := fmt.Fprintf
 
 	// default tags
@@ -37,15 +26,10 @@ func Generate(w io.Writer, s *schema.Schema, validate bool) error {
 		out(w, "pub struct %s {\n", format.GoName(t.Name))
 		writeFields(w, s, t.Properties)
 		out(w, "}\n\n")
-		if validate {
-			writeValidation(w, format.GoName(t.Name), t.Properties)
-			out(w, "\n")
-		}
 	}
 
 	// methods
 	for _, m := range s.Methods {
-		//typeName := strings.Title(format.RustName(m.Name))
 		name := format.GoName(m.Name)
 
 		// inputs
@@ -55,10 +39,6 @@ func Generate(w io.Writer, s *schema.Schema, validate bool) error {
 			out(w, "pub struct %sInput{\n", name)
 			writeFields(w, s, m.Inputs)
 			out(w, "}\n")
-			if validate {
-				out(w, "\n")
-				writeValidation(w, name+"Input", m.Inputs)
-			}
 		}
 
 		// both
@@ -77,8 +57,6 @@ func Generate(w io.Writer, s *schema.Schema, validate bool) error {
 
 		out(w, "\n")
 	}
-
-	//out(w, "\n%s\n", utils)
 
 	return nil
 }
@@ -124,7 +102,7 @@ func rustType(s *schema.Schema, f schema.Field) string {
 	case schema.Timestamp:
 		return "DateTime<chrono::Utc>"
 	case schema.Object:
-		return "HashMap<String,std::any::Any>"
+		return "HashMap<String, std::any::Any>"
 	case schema.Array:
 		return "Vec<" + strings.Title(rustType(s, schema.Field{
 			Type: schema.TypeObject(f.Items),
@@ -156,117 +134,4 @@ func formatTags(tags [][]string) string {
 		}
 	}
 	return fmt.Sprintf("`%s`", strings.Join(s, " "))
-}
-
-// writeValidation writes a validation method implementation to w.
-func writeValidation(w io.Writer, name string, fields []schema.Field) error {
-	out := fmt.Fprintf
-	recv := strings.ToLower(name)[0]
-	out(w, "// Validate implementation.\n")
-	out(w, "impl %s {\n", name)
-
-	out(w, "  pub fn validate(&self) -> Result<(), String> {\n")
-	for _, f := range fields {
-		writeFieldDefaults(w, f, recv)
-		writeFieldValidation(w, f, recv)
-	}
-	out(w, "    return Ok(())\n")
-	out(w, "  }\n")
-	out(w, "}\n")
-	return nil
-}
-
-// writeFieldDefaults writes field defaults to w.
-func writeFieldDefaults(w io.Writer, f schema.Field, recv byte) error {
-	// TODO: write out a separate Default() method?
-	if f.Default == nil {
-		return nil
-	}
-
-	out := fmt.Fprintf
-	name := format.RustName(f.Name)
-
-	switch f.Type.Type {
-	case schema.Int:
-		out(w, "    if self.%s == 0 {\n", recv, name)
-		out(w, "      self.%s = %v\n", recv, name, f.Default)
-		out(w, "    }\n\n")
-	case schema.String:
-		out(w, "    if self.%s.is_empty() {\n", recv, name)
-		out(w, "      self.%s = %q\n", recv, name, f.Default)
-		out(w, "    }\n\n")
-	}
-
-	return nil
-}
-
-// writeFieldValidation writes field validation to w.
-func writeFieldValidation(w io.Writer, f schema.Field, recv byte) error {
-	out := fmt.Fprintf
-	name := format.RustName(f.Name)
-
-	writeError := func(msg string) {
-		//out(w, "    return rpc.ValidationError{ Field: %q, Message: %q }\n", f.Name, msg)
-		out(w, `      return Err("Field: %s, Message: %s".to_string())`+"\n", f.Name, msg)
-	}
-
-	// required
-	if f.Required {
-		switch f.Type.Type {
-		case schema.Int:
-			out(w, "    if self.%s == 0 {\n", name)
-			writeError("is required")
-			out(w, "    }\n\n")
-		case schema.String:
-			out(w, "    if self.%s.is_empty() {\n", name)
-			writeError("is required")
-			out(w, "    }\n\n")
-		case schema.Array, schema.Object:
-			out(w, "    if self.%s == nil {\n", name)
-			writeError("is required")
-			out(w, "    }\n\n")
-		case schema.Timestamp:
-			out(w, "    if self.%s.IsZero() {\n", name)
-			writeError("is required")
-			out(w, "    }\n\n")
-		}
-	}
-
-	// enums
-	if f.Type.Type == schema.String && f.Enum != nil {
-		field := fmt.Sprintf("self.%s", name)
-		out(w, "  if %s != \"\" && !oneOf(%s, %s) {\n", field, field, formatSlice(f.Enum))
-		writeError(fmt.Sprintf("must be one of: %s", formatEnum(f.Enum)))
-		out(w, "  }\n\n")
-	}
-
-	// validate the children of non-primitive arrays
-	// TODO: HasRef() or similar?
-	if f.Type.Type == schema.Array && f.Items.Ref.Value != "" {
-		out(w, "  for i, v := range %c.%s {\n", recv, name)
-		out(w, "    if err := v.Validate(); err != nil {\n")
-		out(w, "      return fmt.Errorf(\"element %%d: %%s\", i, err.Error())\n")
-		out(w, "    }\n")
-		out(w, "  }\n\n")
-	}
-
-	return nil
-}
-
-// formatSlice returns a formatted slice from enum.
-func formatSlice(values []string) string {
-	var vals []string
-	for _, l := range values {
-		vals = append(vals, strconv.Quote(l))
-	}
-	return fmt.Sprintf("[]string{%s}", strings.Join(vals, ", "))
-}
-
-// formatEnum returns a formatted enum values.
-func formatEnum(values []string) string {
-	var vals []string
-	for _, l := range values {
-		vals = append(vals, strconv.Quote(l))
-	}
-	return strings.Join(vals, ", ")
 }

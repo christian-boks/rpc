@@ -51,7 +51,7 @@ func generate(w io.Writer, s *schema.Schema) error {
 	out(w, "use serde::{Deserialize, Serialize};\n")
 	out(w, "use chrono::{DateTime};\n\n")
 
-	err := rusttypes.Generate(w, s, false)
+	err := rusttypes.Generate(w, s)
 	if err != nil {
 		return fmt.Errorf("generating types: %w", err)
 	}
